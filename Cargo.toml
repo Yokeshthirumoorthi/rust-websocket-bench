@@ -1,0 +1,6 @@
+[package]
+name = "rust-websocket-bench"
+version = "0.1.0"
+authors = ["yokeshthirumoorthi <yokeshthirumoorthi@gmail.com>"]
+
+[dependencies]
