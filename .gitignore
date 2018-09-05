@@ -1,2 +1,6 @@
 /target
 **/*.rs.bk
+
+docker-compose.yml
+tsung.xml
+config.yml
