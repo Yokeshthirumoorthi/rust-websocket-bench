@@ -107,7 +107,6 @@ class Runner
     end
 
     # target_ip = Config.benchmark_target.ip || run("docker-machine ip bench-target", streaming_output: false).strip
-    target_ip = Config.benchmark_target.ip
     renderer = ERB.new(File.read(Config.tsung.template), nil, '<>')
     File.open('tsung.xml', 'w') do |f|
       f.write(renderer.result(binding()))
@@ -123,7 +122,7 @@ class Runner
     puts ""
     puts "Run the following commands to start the benchmark:"
     puts ""
-    puts "docker-machine ssh bench-target \"cd chat; MIX_ENV=prod PORT=4000 iex --name bench@127.0.0.1 --cookie 123 --erl '+P 5000000 -kernel inet_dist_listen_min 9001 inet_dist_listen_max 9001' -S mix phoenix.server\""
+    # puts "docker-machine ssh bench-target \"cd chat; MIX_ENV=prod PORT=4000 iex --name bench@127.0.0.1 --cookie 123 --erl '+P 5000000 -kernel inet_dist_listen_min 9001 inet_dist_listen_max 9001' -S mix phoenix.server\""
     puts "eval $(docker-machine env --swarm bench-master)"
     puts "docker-compose up"
     puts ""

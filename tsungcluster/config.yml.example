@@ -3,7 +3,7 @@ tsung:
   # The user limit is determined automatically based on workers * 60000
   #maxnumber: 2000000
   # Change the server ip to actual server ip
-  #serverip:127.0.0.1
+  #server_ip: 127.0.0.1
   arrivalrate: 500
   template: files/tsung.xml.erb
 #digital_ocean_token: YOURTOKEN
