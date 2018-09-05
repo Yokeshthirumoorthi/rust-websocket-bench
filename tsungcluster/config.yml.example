@@ -1,0 +1,22 @@
+workers: 40
+tsung:
+  # The user limit is determined automatically based on workers * 60000
+  #maxnumber: 2000000
+  # Change the server ip to actual server ip
+  #serverip:127.0.0.1
+  arrivalrate: 500
+  template: files/tsung.xml.erb
+#digital_ocean_token: YOURTOKEN
+#benchmark_target:
+  # To speed up the droplet creation use a snapshot of a previous provision
+  #image: ubuntu-16-04-x64
+  #region: sfo2
+  #size: 64gb
+worker:
+  image: ubuntu-16-04-x64
+  region: sfo2
+  size: 4gb
+kv_store:
+  image: ubuntu-16-04-x64
+  region: sfo2
+  size: 1gb
