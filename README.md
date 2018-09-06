@@ -16,8 +16,8 @@ highly concurrent and parallel programs. So I believe to acheive something like 
 Use the following scripts to setup the machine
 
 ```
-git clone https://github.com/Yokeshthirumoorthi/rust-convexhull-benchmarks.git
-cd rust-convexhull-benchmarks
+git clone https://github.com/Yokeshthirumoorthi/rust-websocket-benchmark.git
+cd rust-websocket-benchmark
 chmod +x server-setup.sh
 ./server-setup.sh
 ```
