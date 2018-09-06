@@ -1,6 +1,6 @@
 # OS configuration for performing benchmarks
 # HINT : Use `sudo su -` to run several commands as root user use
-# sudo su -
+sudo su -
 sysctl -w fs.file-max=12000500
 sysctl -w fs.nr_open=20000500
 ulimit -n 4000000
@@ -20,8 +20,7 @@ yes | sudo apt-get update
 
 # Install Rust
 # curl https://sh.rustup.rs -sSf | sh
-curl https://sh.rustup.rs -sSf | bash -s -- -y
-echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+curl -sSf https://static.rust-lang.org/rustup.sh | sh
 
 # Setup the project
 cargo install diesel_cli --no-default-features --features sqlite
