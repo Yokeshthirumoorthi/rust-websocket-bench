@@ -1,4 +1,4 @@
-# rust-websocket-bench
+# rust-websocket-benchmark
 Distributed load testing for rust websocket
 
 RUST is a fast, safe and efficient programming language to develope
@@ -11,17 +11,24 @@ highly concurrent and parallel programs. So I believe to acheive something like 
 * Ruby
 * DigitalOcean account
 
-## Build Instructions
+## Setup and run the server
 
-1. Prerequisites for build
+Use the following scripts to setup the machine
 
-    Install Rust by run the following in your terminal
-
-    ```bash
-    curl https://sh.rustup.rs -sSf | sh
-    ```
-    or follow [this official installation instruction](https://www.rust-lang.org/en-US/install.html).
-
+```
+git clone https://github.com/Yokeshthirumoorthi/rust-convexhull-benchmarks.git
+cd rust-convexhull-benchmarks
+chmod +x server-setup.sh
+./server-setup.sh
+```
+Start server as simple chat server
+```
+cargo run --bin server
+```
+Start server as simple chat server + sqlite persistence
+```
+cargo run --bin server_sqlite
+```
 ## Run the benchmark
 
 Export your DigitalOcean API key (can also be set in in the configuration)
@@ -33,14 +40,12 @@ Change your directory to tsungcluster
 ```
 cd tsungcluster
 ```
+Set the server_ip in config.yml.example and
 
 Copy and edit the example configuration:
 ```
 cp config.yml.example config.yml
 ```
-
-**And set the server ip in config.yml**
-
 
 Setup the droplets (this will take a few minutes depending on the amount of workers configured):
 ```
