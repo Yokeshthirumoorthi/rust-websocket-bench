@@ -23,10 +23,12 @@ chmod +x server-setup.sh
 ```
 ## Run the project
 
+```
 cd ~/rust-websocket-benchmark
 cargo install diesel_cli --no-default-features --features sqlite
 echo "DATABASE_URL=test.db" > .env
 diesel migration run
+```
 
 Start server as simple chat server
 ```
