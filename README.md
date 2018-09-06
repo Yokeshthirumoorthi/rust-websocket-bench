@@ -11,7 +11,7 @@ highly concurrent and parallel programs. So I believe to acheive something like 
 * Ruby
 * DigitalOcean account
 
-## Setup and run the server
+## Setup the server machine
 
 Use the following scripts to setup the machine
 
@@ -21,6 +21,13 @@ cd rust-websocket-benchmark
 chmod +x server-setup.sh
 ./server-setup.sh
 ```
+## Run the project
+
+cd ~/rust-websocket-benchmark
+cargo install diesel_cli --no-default-features --features sqlite
+echo "DATABASE_URL=test.db" > .env
+diesel migration run
+
 Start server as simple chat server
 ```
 cargo run --bin server
