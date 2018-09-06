@@ -8,6 +8,10 @@ name = "server"
 path = "src/main.rs"
 
 [[bin]]
+name = "server_sqlite"
+path = "src/main_actix_sqlite.rs"
+
+[[bin]]
 name = "client"
 path = "src/client.rs"
 
