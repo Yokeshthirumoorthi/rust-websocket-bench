@@ -13,17 +13,23 @@ echo "root soft nofile 4000000" >> /etc/security/limits.conf
 echo "root hard nofile 4000000" >> /etc/security/limits.conf
 sysctl -w net.ipv4.ip_local_port_range="1024 64000"
 
-# Install Rust
-curl https://sh.rustup.rs -sSf | sh
-
 # Install build essentials in ubuntu to configure diesel.
 yes | sudo apt-get update
-yes | sudo apt-get install build-essential sqlite3 libsqlite3-dev 
+yes | sudo apt-get install build-essential sqlite3 libsqlite3-dev curl
+yes | sudo apt-get update
+
+# Install Rust
+# curl https://sh.rustup.rs -sSf | sh
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
 # Setup the project
 cargo install diesel_cli --no-default-features --features sqlite
 echo "DATABASE_URL=test.db" > .env
 diesel migration run
+
+# Run the project
+cargo run --bin server
 
 # ##########################################################################################################
 # 
