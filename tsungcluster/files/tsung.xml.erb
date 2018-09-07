@@ -30,7 +30,7 @@
       </request>
 
       <request subst="true">
-        <websocket type="message">{"topic":"rooms:lobby", "event":"rust_join", "payload": {"user":"%%ts_user_server:get_unique_id%%"}, "ref":"1"}</websocket>
+        <websocket type="message" frame="text">{"topic":"rooms:lobby", "event":"rust_join", "payload": {"user":"%%ts_user_server:get_unique_id%%"}, "ref":"1"}</websocket>
       </request>
 
       <for var="i" from="1" to="1000" incr="1">
