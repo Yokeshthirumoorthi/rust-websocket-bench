@@ -112,10 +112,10 @@ impl Handler<Connect> for ChatServer {
     type Result = usize;
 
     fn handle(&mut self, msg: Connect, _: &mut Context<Self>) -> Self::Result {
-        println!("Someone joined");
+        // println!("Someone joined");
 
         // notify all users in same room
-        self.send_message(&"Main".to_owned(), "Someone joined", 0);
+        // self.send_message(&"Main".to_owned(), "Someone joined", 0);
 
         // register session with random id
         let id = self.rng.borrow_mut().gen::<usize>();
@@ -134,7 +134,7 @@ impl Handler<Disconnect> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _: &mut Context<Self>) {
-        println!("Someone disconnected");
+        // println!("Someone disconnected");
 
         let mut rooms: Vec<String> = Vec::new();
 
@@ -148,9 +148,9 @@ impl Handler<Disconnect> for ChatServer {
             }
         }
         // send message to other users
-        for room in rooms {
-            self.send_message(&room, "Someone disconnected", 0);
-        }
+        // for room in rooms {
+        //     self.send_message(&room, "Someone disconnected", 0);
+        // }
     }
 }
 
