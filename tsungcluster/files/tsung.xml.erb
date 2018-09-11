@@ -26,11 +26,11 @@
   <sessions>
     <session name="websocket" probability="100" type="ts_websocket">
       <request>
-        <websocket type="connect" path="/ws"></websocket>
+        <websocket type="connect" path="/ws/"></websocket>
       </request>
 
       <request subst="true">
-        <websocket type="message">{"topic":"rooms:lobby", "event":"rust_join", "payload": {"user":"%%ts_user_server:get_unique_id%%"}, "ref":"1"}</websocket>
+        <websocket type="message" frame="text">{"topic":"rooms:lobby", "event":"rust_join", "payload": {"user":"%%ts_user_server:get_unique_id%%"}, "ref":"1"}</websocket>
       </request>
 
       <for var="i" from="1" to="1000" incr="1">
