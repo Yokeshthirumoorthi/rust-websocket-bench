@@ -17,7 +17,9 @@ use rand::{self, Rng, ThreadRng};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
-use session;
+/// Chat server sends this messages to session
+#[derive(Message)]
+pub struct SessionMessage(pub String);
 
 /// Message for chat server communications
 
@@ -25,7 +27,7 @@ use session;
 #[derive(Message)]
 #[rtype(usize)]
 pub struct Connect {
-    pub addr: Recipient<Syn, session::Message>,
+    pub addr: Recipient<Syn, SessionMessage>,
 }
 
 /// Session is disconnected
@@ -48,7 +50,7 @@ pub struct Message {
 /// `ChatServer` manages chat rooms and responsible for coordinating chat
 /// session. implementation is super primitive
 pub struct ChatServer {
-    sessions: HashMap<usize, Recipient<Syn, session::Message>>,
+    sessions: HashMap<usize, Recipient<Syn, SessionMessage>>,
     rooms: HashMap<String, HashSet<usize>>,
     rng: RefCell<ThreadRng>,
 }
@@ -74,7 +76,7 @@ impl ChatServer {
             for id in sessions {
                 if *id != skip_id {
                     if let Some(addr) = self.sessions.get(id) {
-                        let _ = addr.do_send(session::Message(message.to_owned()));
+                        let _ = addr.do_send(SessionMessage(message.to_owned()));
                     }
                 }
             }

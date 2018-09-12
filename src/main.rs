@@ -22,7 +22,6 @@ use actix_web::server::HttpServer;
 use actix_web::{ws, App, Error, HttpRequest, HttpResponse};
 
 mod server;
-mod session;
 
 const SERVER_ADDRESS: &str = "0.0.0.0:8080";
 // const SERVER_ADDRESS: &str = "127.0.0.1:8080";
@@ -89,10 +88,10 @@ impl Actor for WsChatSession {
 }
 
 /// Handle messages from chat server, we simply send it to peer websocket
-impl Handler<session::Message> for WsChatSession {
+impl Handler<server::SessionMessage> for WsChatSession {
     type Result = ();
 
-    fn handle(&mut self, msg: session::Message, ctx: &mut Self::Context) {
+    fn handle(&mut self, msg: server::SessionMessage, ctx: &mut Self::Context) {
         ctx.text(msg.0);
     }
 }
