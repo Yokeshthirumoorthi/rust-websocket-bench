@@ -9,15 +9,9 @@
 // License (MIT) https://github.com/actix/actix-web/blob/master/LICENSE-MIT
 
 #![allow(unused_variables)]
-extern crate byteorder;
-extern crate bytes;
-extern crate env_logger;
-extern crate futures;
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
-extern crate tokio_core;
-extern crate tokio_io;
 #[macro_use]
 extern crate serde_derive;
 
@@ -35,13 +29,11 @@ use actix::*;
 use actix_web::server::HttpServer;
 use actix_web::{fs, http, ws, App, Error, HttpRequest, HttpResponse};
 
-mod codec;
 mod server;
 mod session;
 
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
-use futures::Future;
 
 mod db;
 mod models;
@@ -213,18 +205,10 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for WsChatSession {
 }
 
 fn main() {
-    let _ = env_logger::init();
     let sys = actix::System::new("websocket-example");
 
     // Start chat server actor in separate thread
     let server: Addr<Syn, _> = Arbiter::start(|_| server::ChatServer::default());
-
-    // Start tcp server in separate thread
-    let srv = server.clone();
-    Arbiter::new("tcp-server").do_send::<msgs::Execute>(msgs::Execute::new(move || {
-        session::TcpServer::new("0.0.0.0:12345", srv);
-        Ok(())
-    }));
 
     // Start 3 db executor actors
     let manager = ConnectionManager::<SqliteConnection>::new("test.db");
