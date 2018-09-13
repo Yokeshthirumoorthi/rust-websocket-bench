@@ -12,22 +12,20 @@
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
+
+#[macro_use]
+extern crate actix;
+extern crate actix_web;
 #[macro_use]
 extern crate serde_derive;
 
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate actix;
-extern crate actix_web;
 extern crate r2d2;
 extern crate uuid;
-
-use std::time::Instant;
-
 use actix::*;
 use actix_web::server::HttpServer;
-use actix_web::{fs, http, ws, App, Error, HttpRequest, HttpResponse};
+use actix_web::{ws, App, Error, HttpRequest, HttpResponse};
 
 mod server;
 
@@ -39,6 +37,11 @@ mod models;
 mod schema;
 
 use db::{CreateUser, DbExecutor};
+
+const SERVER_ADDRESS: &str = "0.0.0.0:8080";
+// const SERVER_ADDRESS: &str = "127.0.0.1:8080";
+const WS_PATH: &str = "/ws/";
+const SQLITE_DB: &str = "test.db";
 
 /// This is our websocket route state, this state is shared with all route
 /// instances via `HttpContext::state()`
@@ -53,9 +56,7 @@ fn chat_route(req: HttpRequest<WsChatSessionState>) -> Result<HttpResponse, Erro
         req,
         WsChatSession {
             id: 0,
-            hb: Instant::now(),
             room: "Main".to_owned(),
-            name: None,
         },
     )
 }
@@ -63,13 +64,8 @@ fn chat_route(req: HttpRequest<WsChatSessionState>) -> Result<HttpResponse, Erro
 struct WsChatSession {
     /// unique session id
     id: usize,
-    /// Client must send ping at least once per 10 seconds, otherwise we drop
-    /// connection.
-    hb: Instant,
     /// joined room
     room: String,
-    /// peer name
-    name: Option<String>,
 }
 
 impl Actor for WsChatSession {
@@ -92,7 +88,14 @@ impl Actor for WsChatSession {
             .into_actor(self)
             .then(|res, act, ctx| {
                 match res {
-                    Ok(res) => act.id = res,
+                    Ok(res) => {
+                        // save message to db
+                        //TODO: this is just a draft.. save the actual message instead of CreateUser
+                        ctx.state().db.do_send(CreateUser {
+                            name: "SomeUser".to_string(),
+                        });
+                        act.id = res
+                    }
                     // something is wrong with chat server
                     _ => ctx.stop(),
                 }
@@ -122,81 +125,17 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for WsChatSession {
     fn handle(&mut self, msg: ws::Message, ctx: &mut Self::Context) {
         // println!("WEBSOCKET MESSAGE: {:?}", msg);
         match msg {
-            ws::Message::Ping(msg) => ctx.pong(&msg),
-            ws::Message::Pong(msg) => self.hb = Instant::now(),
             ws::Message::Text(text) => {
                 let m = text.trim();
-                // we check for /sss type of messages
-                if m.starts_with('/') {
-                    let v: Vec<&str> = m.splitn(2, ' ').collect();
-                    match v[0] {
-                        "/list" => {
-                            // Send ListRooms message to chat server and wait for
-                            // response
-                            println!("List rooms");
-                            ctx.state()
-                                .addr
-                                .send(server::ListRooms)
-                                .into_actor(self)
-                                .then(|res, _, ctx| {
-                                    match res {
-                                        Ok(rooms) => {
-                                            for room in rooms {
-                                                ctx.text(room);
-                                            }
-                                        }
-                                        _ => println!("Something is wrong"),
-                                    }
-                                    fut::ok(())
-                                })
-                                .wait(ctx)
-                            // .wait(ctx) pauses all events in context,
-                            // so actor wont receive any new messages until it get list
-                            // of rooms back
-                        }
-                        "/join" => {
-                            if v.len() == 2 {
-                                self.room = v[1].to_owned();
-                                ctx.state().addr.do_send(server::Join {
-                                    id: self.id,
-                                    name: self.room.clone(),
-                                });
-
-                                ctx.text("joined");
-                            } else {
-                                ctx.text("!!! room name is required");
-                            }
-                        }
-                        "/name" => {
-                            if v.len() == 2 {
-                                self.name = Some(v[1].to_owned());
-                            } else {
-                                ctx.text("!!! name is required");
-                            }
-                        }
-                        _ => ctx.text(format!("!!! unknown command: {:?}", m)),
-                    }
-                } else {
-                    let msg = if let Some(ref name) = self.name {
-                        format!("{}: {}", name, m)
-                    } else {
-                        m.to_owned()
-                    };
-                    // save message to db
-                    //TODO: this is just a draft.. save the actual message instead of CreateUser
-                    ctx.state().db.do_send(CreateUser {
-                        name: msg.to_string(),
-                    });
-                    // send message to chat server
-                    ctx.state().addr.do_send(server::Message {
-                        id: self.id,
-                        msg: msg,
-                        room: self.room.clone(),
-                    })
-                }
+                let msg = m.to_owned();
+                // send message to chat server
+                ctx.state().addr.do_send(server::Message {
+                    id: self.id,
+                    msg: msg,
+                    room: self.room.clone(),
+                })
             }
-            ws::Message::Binary(bin) => println!("Unexpected binary"),
-            ws::Message::Close(_) => {
+            _ => {
                 ctx.stop();
             }
         }
@@ -204,13 +143,13 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for WsChatSession {
 }
 
 fn main() {
-    let sys = actix::System::new("websocket-example");
+    let sys = actix::System::new("simple-rust-websocket");
 
     // Start chat server actor in separate thread
     let server: Addr<Syn, _> = Arbiter::start(|_| server::ChatServer::default());
 
     // Start 3 db executor actors
-    let manager = ConnectionManager::<SqliteConnection>::new("test.db");
+    let manager = ConnectionManager::<SqliteConnection>::new(SQLITE_DB);
     let pool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool.");
@@ -225,21 +164,12 @@ fn main() {
             db: db_addr.clone(),
         };
 
-        App::with_state(state)
-                // redirect to websocket.html
-                .resource("/", |r| r.method(http::Method::GET).f(|_| {
-                    HttpResponse::Found()
-                        .header("LOCATION", "/static/websocket.html")
-                        .finish()
-                }))
-                // websocket
-                .resource("/ws/", |r| r.route().f(chat_route))
-                // static resources
-                .handler("/static/", fs::StaticFiles::new("static/"))
-    }).bind("0.0.0.0:8080")
+        // websocket
+        App::with_state(state).resource(WS_PATH, |r| r.route().f(chat_route))
+    }).bind(SERVER_ADDRESS)
         .unwrap()
         .start();
 
-    println!("Started http server: 0.0.0.0:8080");
+    println!("Started http server: {}", SERVER_ADDRESS);
     let _ = sys.run();
 }
