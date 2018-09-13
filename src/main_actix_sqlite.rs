@@ -38,10 +38,10 @@ mod schema;
 
 use db::{CreateUser, DbExecutor};
 
-const SERVER_ADDRESS: &str = "0.0.0.0:8080";
-// const SERVER_ADDRESS: &str = "127.0.0.1:8080";
+const SERVER_ADDRESS: &str = "0.0.0.0:8081";
 const WS_PATH: &str = "/ws/";
 const SQLITE_DB: &str = "test.db";
+const NUM_DB_THREADS: usize = 3;
 
 /// This is our websocket route state, this state is shared with all route
 /// instances via `HttpContext::state()`
@@ -154,7 +154,7 @@ fn main() {
         .build(manager)
         .expect("Failed to create pool.");
 
-    let db_addr = SyncArbiter::start(3, move || DbExecutor(pool.clone()));
+    let db_addr = SyncArbiter::start(NUM_DB_THREADS, move || DbExecutor(pool.clone()));
 
     // Create Http server with websocket support
     HttpServer::new(move || {

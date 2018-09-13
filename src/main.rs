@@ -24,7 +24,6 @@ use actix_web::{ws, App, Error, HttpRequest, HttpResponse};
 mod server;
 
 const SERVER_ADDRESS: &str = "0.0.0.0:8080";
-// const SERVER_ADDRESS: &str = "127.0.0.1:8080";
 const WS_PATH: &str = "/ws/";
 
 /// This is our websocket route state, this state is shared with all route
